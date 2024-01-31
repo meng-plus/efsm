@@ -16,26 +16,26 @@
 extern "C"
 {
 #endif
-
-    typedef struct _EFSM_STATE
+    typedef struct _EFSM_STATE efsm_state_t;
+    typedef struct _EFSM_MANAGE efsm_manage_t;
+    struct _EFSM_STATE
     {
-        struct _EFSM_STATE *next;                             /*!< 要切换的下一个状态，如果为NULL则不切换 */
-        void (*init)(void *obj);                              /*!< 切换到这个状态的初始化操作 */
-        void (*exit)(void *obj);                              /*!< 退出此状态的动作 */
-        void (*action)(void *obj, uint32_t cmd, void *param); /*!< 相应的状态事件 */
-    } efsm_state_t;
-
-    typedef struct _EFSM_MANAGE
+        efsm_state_t *next;                                           /*!< 要切换的下一个状态，如果为NULL则不切换 */
+        void (*init)(efsm_state_t *obj);                              /*!< 切换到这个状态的初始化操作 */
+        void (*exit)(efsm_state_t *obj);                              /*!< 退出此状态的动作 */
+        void (*action)(efsm_state_t *obj, uint32_t cmd, void *param); /*!< 相应的状态事件 */
+    };
+    struct _EFSM_MANAGE
     {
-        uint32_t hold_on : 1;      /*!< 锁定状态不允许切换 */
-        uint32_t stop : 1;         /*!< 停止事件响应 */
-        struct _EFSM_MANAGE *next; /*!< 单链表结构 */
+        uint32_t hold_on : 1; /*!< 锁定状态不允许切换 */
+        uint32_t stop : 1;    /*!< 停止事件响应 */
+        efsm_manage_t *next;  /*!< 单链表结构 */
         efsm_state_t *pstate;
-        void (*init)(void *obj);                               /* 初始化函数 */
-        void (*tick)(void *obj);                               /* 周期性任务 */
-        void (*exit)(void *obj);                               /* 退出函数 */
-        void (*control)(void *obj, uint32_t cmd, void *param); /* 控制函数 ,param取决于cmd*/
-    } efsm_manage_t;
+        void (*init)(efsm_manage_t *obj);                               /* 初始化函数 */
+        void (*tick)(efsm_manage_t *obj);                               /* 周期性任务 */
+        void (*exit)(efsm_manage_t *obj);                               /* 退出函数 */
+        void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /* 控制函数 ,param取决于cmd*/
+    };
 
     void efsm_init();
     /**

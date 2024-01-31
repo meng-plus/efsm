@@ -95,12 +95,12 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
     {
         if (obj->pstate != NULL && obj->pstate->exit != NULL)
         {
-            obj->pstate->exit(obj);
+            obj->pstate->exit(obj->pstate);
         }
         obj->pstate = nextState;
         if (obj->pstate != NULL && obj->pstate->init != NULL)
         {
-            obj->pstate->init(obj);
+            obj->pstate->init(obj->pstate);
         }
     }
 }
@@ -118,7 +118,7 @@ void efsm_process_event(efsm_manage_t *obj, uint32_t cmd, void *param)
         }
         else
         { /*!< 用户级别的事件 */
-            obj->pstate->action(obj, cmd, param);
+            obj->pstate->action(obj->pstate, cmd, param);
         }
         if (obj->pstate->next)
         {
@@ -165,7 +165,7 @@ void efsm_sys_event(efsm_manage_t *obj, uint32_t cmd, void *param)
 // 实现状态初始化
 void efsm_state_init(efsm_manage_t *obj)
 {
-    if (obj->init != NULL && !obj->init)
+    if (obj->init != NULL)
     {
         obj->init(obj);
     }

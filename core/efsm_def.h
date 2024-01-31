@@ -17,7 +17,7 @@
  */
 #define EFSM_STATE_SYS_CMD_BASE 0x000
 #define EFSM_STATE_USER_CMD_BASE 0x100
-
+#define EFSM_UNUSED(param) (void)param
 // 根据需要定义更多的命令
 enum EFSM_SYS_CMD
 {

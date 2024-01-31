@@ -9,39 +9,39 @@
 efsm_manage_t myStateMachine;
 
 // 状态初始化函数
-void initStateRunning(void *obj)
+void initStateRunning(efsm_state_t *obj)
 {
     (void)obj; // 防止未使用的参数警告
     printf("Initializing State: Running\n");
 }
 
-void initStateStopped(void *obj)
+void initStateStopped(efsm_state_t *obj)
 {
     (void)obj; // 防止未使用的参数警告
     printf("Initializing State: Stopped\n");
 }
 
 // 状态退出函数
-void exitStateRunning(void *obj)
+void exitStateRunning(efsm_state_t *obj)
 {
     (void)obj; // 防止未使用的参数警告
     printf("Exiting State: Running\n");
 }
 
-void exitStateStopped(void *obj)
+void exitStateStopped(efsm_state_t *obj)
 {
     (void)obj; // 防止未使用的参数警告
     printf("Exiting State: Stopped\n");
 }
 // 状态事件处理函数
-void actionStateRunning(void *obj, uint32_t cmd, void *param);
-void actionStateStopped(void *obj, uint32_t cmd, void *param);
+void actionStateRunning(efsm_state_t *obj, uint32_t cmd, void *param);
+void actionStateStopped(efsm_state_t *obj, uint32_t cmd, void *param);
 // 状态定义
 efsm_state_t stateIdle = {NULL, NULL, NULL, NULL};
 efsm_state_t stateRunning = {NULL, initStateRunning, exitStateRunning, actionStateRunning};
 efsm_state_t stateStopped = {NULL, initStateStopped, exitStateStopped, actionStateStopped};
 // 状态事件处理函数
-void actionStateRunning(void *obj, uint32_t cmd, void *param)
+void actionStateRunning(efsm_state_t *obj, uint32_t cmd, void *param)
 {
     (void)obj; // 防止未使用的参数警告
     (void)cmd;
@@ -49,11 +49,11 @@ void actionStateRunning(void *obj, uint32_t cmd, void *param)
     if (cmd == CMD_STOP)
     {
         printf("Received CMD_STOP, transitioning to Stopped state\n");
-        efsm_transition(obj, &stateStopped);
+        obj->next = &stateStopped;
     }
 }
 
-void actionStateStopped(void *obj, uint32_t cmd, void *param)
+void actionStateStopped(efsm_state_t *obj, uint32_t cmd, void *param)
 {
     (void)obj; // 防止未使用的参数警告
     (void)cmd;
@@ -61,7 +61,7 @@ void actionStateStopped(void *obj, uint32_t cmd, void *param)
     if (cmd == CMD_START)
     {
         printf("Received CMD_START, transitioning to Running state\n");
-        efsm_transition(obj, &stateRunning);
+        obj->next = &stateRunning;
     }
 }
 
