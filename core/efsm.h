@@ -12,54 +12,92 @@
 
 #include <stdint.h>
 #include "efsm_def.h"
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-    typedef struct _EFSM_STATE efsm_state_t;
-    typedef struct _EFSM_MANAGE efsm_manage_t;
-    struct _EFSM_STATE
-    {
-        efsm_state_t *next;                                           /*!< 要切换的下一个状态，如果为NULL则不切换 */
-        void (*init)(efsm_state_t *obj);                              /*!< 切换到这个状态的初始化操作 */
-        void (*exit)(efsm_state_t *obj);                              /*!< 退出此状态的动作 */
-        void (*action)(efsm_state_t *obj, uint32_t cmd, void *param); /*!< 相应的状态事件 */
-    };
-    struct _EFSM_MANAGE
-    {
-        uint32_t hold_on : 1; /*!< 锁定状态不允许切换 */
-        uint32_t stop : 1;    /*!< 停止事件响应 */
-        efsm_manage_t *next;  /*!< 单链表结构 */
-        efsm_state_t *pstate;
-        void (*init)(efsm_manage_t *obj);                               /* 初始化函数 */
-        void (*tick)(efsm_manage_t *obj);                               /* 周期性任务 */
-        void (*exit)(efsm_manage_t *obj);                               /* 退出函数 */
-        void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /* 控制函数 ,param取决于cmd*/
-    };
 
-    void efsm_init();
-    /**
-     * @brief 初始化结构体，用于清零缓存区，可以自行处理
-     */
-    void efsm_manage_init(efsm_manage_t *obj);
-    /**
-     * @brief 注册状态机，使其可用
-     */
-    void efsm_register(efsm_manage_t *obj);
-    /**
-     * @brief 移除状态机
-     * @param obj 移除的状态机句柄
-     */
-    void efsm_remove(efsm_manage_t *obj);
-    /**
-     * @brief 周期性事件函数，可以理解为状态机的线程，根据需要开发
-     */
-    void efsm_manage_tick();
-    // 执行状态事件处理
-    void efsm_process_event(efsm_manage_t *obj, uint32_t cmd, void *param);
-    void efsm_broadcast_event(uint32_t cmd, void *param);
-    // 执行状态切换
-    void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _EFSM_STATE efsm_state_t;
+typedef struct _EFSM_MANAGE efsm_manage_t;
+struct _EFSM_STATE
+{
+    efsm_manage_t *parent;                                        /*!< 状态句柄 非运行状态此处为空*/
+    const char *name;                                             /*!< 状态名称 状态标签*/
+    uint8_t id;                                                   /*!< 状态ID  状态标签 */
+    void (*init)(efsm_state_t *obj);                              /*!< 切换到这个状态的初始化操作 */
+    void (*exit)(efsm_state_t *obj);                              /*!< 退出此状态的动作 */
+    void (*action)(efsm_state_t *obj, uint32_t cmd, void *param); /*!< 相应的状态事件 */
+};
+struct _EFSM_MANAGE
+{
+    efsm_manage_t *next;                                            /*!< 单链表结构 */
+    uint32_t init_ok : 1;                                           /*!< 初始化标志 */
+    uint32_t hold_on : 1;                                           /*!< 锁定状态不允许切换 */
+    uint32_t stop    : 1;                                           /*!< 停止事件响应 */
+    efsm_state_t *pstate;
+    void (*init)(efsm_manage_t *obj);                               /* 初始化函数 */
+    void (*tick)(efsm_manage_t *obj);                               /* 周期性任务 */
+    void (*exit)(efsm_manage_t *obj);                               /* 退出函数 */
+    void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /* 控制函数 ,param取决于cmd*/
+    void *user_data;                                                /*!< 用户自定义数据 */
+};
+
+void efsm_init();
+/**
+ * @brief 注册状态机，使其可用
+ */
+void efsm_register(efsm_manage_t *obj);
+/**
+ * @brief 移除状态机
+ * @param obj 移除的状态机句柄
+ */
+void efsm_remove(efsm_manage_t *obj);
+/**
+ * @brief 初始化结构体，用于清零缓存区，可以自行处理
+ */
+void efsm_manage_init(efsm_manage_t *obj);
+/**
+ * @brief 周期性事件函数，可以理解为状态机的线程，根据需要开发
+ * 只有执行 efsm_register  才会从这里调用
+ */
+void efsm_manage_tick();
+/**
+ * @brief 用户自定义的线程函数
+ * 在此处调用的efsm 不再需要注册
+ *
+ * @param obj efsm句柄
+ */
+void efsm_manage_tick_user(efsm_manage_t *obj);
+
+/**
+ * @brief 指定状态机的控制命令
+ *
+ * @param obj
+ * @param cmd
+ * @param param
+ */
+void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, void *param);
+/**
+ * @brief 获得当前状态
+ *
+ * @param obj
+ * @return efsm_state_t*
+ */
+efsm_state_t *efsm_manage_get_state(efsm_manage_t *obj);
+void *efsm_manage_get_userdata(efsm_manage_t *obj);
+
+// 执行状态事件处理
+void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, void *param);
+/**
+ * @brief 广播命令
+ *
+ * @param cmd
+ * @param param
+ */
+void efsm_event_broadcast(uint32_t cmd, void *param);
+// 执行状态切换
+void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState);
+
 #ifdef __cplusplus
 }
 #endif

@@ -4,6 +4,48 @@
 
 这个项目提供了一个用于实现有限状态机（Finite State Machine, FSM）的简单框架，用于管理状态和处理事件。该框架支持状态的初始化、退出、周期性任务执行，以及状态切换和事件处理。
 
+### 状态示意图
+
+```mermaid
+stateDiagram-v2
+    [*] --> First:init
+    First:状态管理
+    state First {
+        state1-->state2:event
+        state2-->state3:evnet
+
+    }
+    First-->[*]:exit
+	API-->First:control
+
+```
+
+### 分层结构
+
+```mermaid
+block-beta
+columns 1
+
+  block
+  event1 evnet2 event3
+  end
+  block
+    state
+  end
+  space
+  block
+  	efsm_event_process efsm_event_broadcast
+  end
+  efsm_transition
+  block
+	efsm_register efsm_remove efsm_manage_control
+  end
+
+  EFSM["efsm_manage_tick"]
+
+
+```
+
 ## 使用方法
 
 ### 1. 包含头文件
@@ -114,9 +156,8 @@ efsm_manage_tick();
 
 ## 贡献
 
-欢迎贡献！如果你发现问题或有改进建议，请提出 [issue](https://github.com/your-username/your-project/issues) 或提交 Pull Request。
+欢迎贡献！如果你发现问题或有改进建议，请提出 issue 或提交 Pull Request。
 
 ## 联系方式
 
-如有任何问题，请通过邮件联系：chengmeng_2@outlook,com。
-
+如有任何问题，请通过邮件联系：chengmeng_2@outlook.com。

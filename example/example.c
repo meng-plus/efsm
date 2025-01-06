@@ -3,7 +3,7 @@
 
 // 事件命令定义
 #define CMD_START (EFSM_STATE_USER_CMD_BASE + 1)
-#define CMD_STOP (EFSM_STATE_USER_CMD_BASE + 2)
+#define CMD_STOP  (EFSM_STATE_USER_CMD_BASE + 2)
 
 // 状态机管理结构体
 efsm_manage_t myStateMachine;
@@ -37,7 +37,7 @@ void exitStateStopped(efsm_state_t *obj)
 void actionStateRunning(efsm_state_t *obj, uint32_t cmd, void *param);
 void actionStateStopped(efsm_state_t *obj, uint32_t cmd, void *param);
 // 状态定义
-efsm_state_t stateIdle = {NULL, NULL, NULL, NULL};
+efsm_state_t stateIdle    = {NULL, NULL, NULL, NULL};
 efsm_state_t stateRunning = {NULL, initStateRunning, exitStateRunning, actionStateRunning};
 efsm_state_t stateStopped = {NULL, initStateStopped, exitStateStopped, actionStateStopped};
 // 状态事件处理函数
@@ -78,9 +78,9 @@ int main()
     efsm_register(&myStateMachine);
 
     // 设置状态机管理函数
-    myStateMachine.init = NULL;    // 你可以添加一个初始化函数
-    myStateMachine.tick = NULL;    // 你可以添加周期性任务的函数
-    myStateMachine.exit = NULL;    // 你可以添加一个退出函数
+    myStateMachine.init    = NULL; // 你可以添加一个初始化函数
+    myStateMachine.tick    = NULL; // 你可以添加周期性任务的函数
+    myStateMachine.exit    = NULL; // 你可以添加一个退出函数
     myStateMachine.control = NULL; // 你可以添加一个控制函数
 
     // 初始化状态机状态为Running
@@ -94,7 +94,7 @@ int main()
     }
 
     // 发送停止命令
-    efsm_process_event(&myStateMachine, CMD_STOP, NULL);
+    efsm_event_process(&myStateMachine, CMD_STOP, NULL);
 
     // 模拟状态机周期性执行
     for (int i = 0; i < 3; ++i)
@@ -104,7 +104,7 @@ int main()
     }
 
     // 发送启动命令
-    efsm_process_event(&myStateMachine, CMD_START, NULL);
+    efsm_event_process(&myStateMachine, CMD_START, NULL);
 
     // 模拟状态机周期性执行
     for (int i = 0; i < 4; ++i)

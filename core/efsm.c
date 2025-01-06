@@ -16,7 +16,7 @@ void efsm_state_init(efsm_manage_t *obj);
 // 实现状态退出
 void efsm_state_exit(efsm_manage_t *obj);
 // 系统级别的事件处理
-void efsm_sys_event(efsm_manage_t *obj, uint32_t cmd, void *param);
+void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, void *param);
 /**
  * @brief 事件框架句柄
  * @author GL2715 (chengmeng_2@outlook.com)
@@ -29,28 +29,41 @@ static efsm_manage_t *efsm_list_head = NULL;
 // 初始化状态机框架
 void efsm_init()
 {
-    efsm_list_head = NULL;
+    // efsm_list_head = NULL;
 }
 
 // 初始化状态机管理结构体
 void efsm_manage_init(efsm_manage_t *obj)
 {
     memset(obj, 0, sizeof(efsm_manage_t));
+    obj->init_ok = 1;
 }
 
 // 注册状态机
 void efsm_register(efsm_manage_t *obj)
 {
-    obj->next = efsm_list_head;
-    efsm_list_head = obj;
-    efsm_state_init(obj);
+    efsm_manage_t *current = efsm_list_head;
+    while (current != NULL)
+    { /*!< 避免重复注册 */
+        if (current == obj)
+        {
+            return;
+        }
+        current = current->next;
+    }
+    if (obj && obj->init_ok)
+    {
+        obj->next      = efsm_list_head;
+        efsm_list_head = obj;
+        efsm_state_init(obj);
+    }
 }
 
 // 从状态机链表中移除状态机
 void efsm_remove(efsm_manage_t *obj)
 {
     efsm_manage_t *current = efsm_list_head;
-    efsm_manage_t *prev = NULL;
+    efsm_manage_t *prev    = NULL;
 
     while (current != NULL)
     {
@@ -67,7 +80,7 @@ void efsm_remove(efsm_manage_t *obj)
             efsm_state_exit(current);
             return;
         }
-        prev = current;
+        prev    = current;
         current = current->next;
     }
 }
@@ -87,47 +100,79 @@ void efsm_manage_tick()
     }
 }
 
+void efsm_manage_tick_user(efsm_manage_t *obj)
+{
+    if (obj != NULL)
+    {
+        if (obj->tick != NULL && !obj->stop)
+        {
+            obj->tick(obj);
+        }
+    }
+}
+
+void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, void *param)
+{
+    if (obj && obj->control)
+    {
+        obj->control(obj, cmd, param);
+    }
+}
+
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
-    if ((obj->pstate != nextState) &&
-        !obj->hold_on)
+    if ((obj->pstate != nextState) && !obj->hold_on)
     {
         if (obj->pstate != NULL && obj->pstate->exit != NULL)
         {
             obj->pstate->exit(obj->pstate);
+            obj->pstate->parent = NULL;
         }
-        obj->pstate = nextState;
-        if (obj->pstate != NULL && obj->pstate->init != NULL)
+        if (nextState != NULL && nextState->init != NULL)
         {
-            obj->pstate->init(obj->pstate);
+            nextState->init(obj->pstate);
+            obj->pstate       = nextState;
+            nextState->parent = obj;
         }
     }
 }
 
 // 执行状态事件处理
-void efsm_process_event(efsm_manage_t *obj, uint32_t cmd, void *param)
+void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, void *param)
 {
-    if (obj->pstate != NULL &&
-        !obj->stop &&
-        obj->pstate->action != NULL)
+    if (obj->pstate != NULL && !obj->stop && obj->pstate->action != NULL)
     {
         if ((cmd & ~0xFF) == 0)
         { /*!< 系统级别的事件 */
-            efsm_sys_event(obj, cmd, param);
+            efsm_event_sys(obj, cmd, param);
         }
         else
         { /*!< 用户级别的事件 */
             obj->pstate->action(obj->pstate, cmd, param);
         }
-        if (obj->pstate->next)
-        {
-            efsm_transition(obj, obj->pstate->next);
-        }
     }
 }
 
-void efsm_broadcast_event(uint32_t cmd, void *param)
+efsm_state_t *efsm_manage_get_state(efsm_manage_t *obj)
+{
+    if (obj)
+    {
+        return obj->pstate;
+    }
+    return NULL;
+}
+
+void *efsm_manage_get_userdata(efsm_manage_t *obj)
+{
+    if (obj)
+    {
+        return obj->user_data;
+    }
+    return NULL;
+}
+
+void efsm_event_broadcast(uint32_t cmd, void *param)
 {
     efsm_manage_t *current = efsm_list_head;
 
@@ -135,14 +180,14 @@ void efsm_broadcast_event(uint32_t cmd, void *param)
     {
         if (!current->stop)
         {
-            efsm_process_event(current, cmd, param);
+            efsm_event_process(current, cmd, param);
         }
         current = current->next;
     }
 }
 // 你可以根据需要定义更多的状态和事件处理函数
 
-void efsm_sys_event(efsm_manage_t *obj, uint32_t cmd, void *param)
+void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, void *param)
 {
     switch (cmd)
     {
