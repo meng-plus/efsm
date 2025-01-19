@@ -5,7 +5,7 @@ cwd = GetCurrentDir()
 src = Glob('core/*.c')
 CPPPATH = [cwd+"/core"]
 
-group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH)
+group = DefineGroup('efsm', src, depend = [''], CPPPATH = CPPPATH)
 
 list = os.listdir(cwd)
 for item in list:

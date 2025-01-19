@@ -35,10 +35,10 @@ struct _EFSM_MANAGE
     uint32_t hold_on : 1;                                           /*!< 锁定状态不允许切换 */
     uint32_t stop    : 1;                                           /*!< 停止事件响应 */
     efsm_state_t *pstate;
-    void (*init)(efsm_manage_t *obj);                               /* 初始化函数 */
-    void (*tick)(efsm_manage_t *obj);                               /* 周期性任务 */
-    void (*exit)(efsm_manage_t *obj);                               /* 退出函数 */
-    void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /* 控制函数 ,param取决于cmd*/
+    void (*init)(efsm_manage_t *obj);                               /*!< 初始化函数 */
+    void (*tick)(efsm_manage_t *obj);                               /*!< 周期性任务 */
+    void (*exit)(efsm_manage_t *obj);                               /*!< 退出函数 */
+    void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /*!< 控制函数 ,param取决于cmd*/
     void *user_data;                                                /*!< 用户自定义数据 */
 };
 
@@ -86,7 +86,13 @@ void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, void *param);
 efsm_state_t *efsm_manage_get_state(efsm_manage_t *obj);
 void *efsm_manage_get_userdata(efsm_manage_t *obj);
 
-// 执行状态事件处理
+/**
+ * @brief  执行状态事件处理
+ *
+ * @param obj
+ * @param cmd @see enum EFSM_SYS_CMD
+ * @param param
+ */
 void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, void *param);
 /**
  * @brief 广播命令
