@@ -41,6 +41,11 @@ struct _EFSM_MANAGE
     void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /*!< 控制函数 ,param取决于cmd*/
     void *user_data;                                                /*!< 用户自定义数据 */
 };
+/** 类型转换 获取包含某成员的结构体指针
+ * @example ESFM_DATA_ENTRY(state_ptr,efsm_state_t,obj)
+ */
+#define ESFM_DATA_ENTRY(ptr, type, member) \
+    ((type *)((char *)(ptr) - offsetof(type, member)))
 
 void efsm_init();
 /**
