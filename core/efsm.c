@@ -124,16 +124,23 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
     if ((obj->pstate != nextState) && !obj->hold_on)
     {
-        if (obj->pstate != NULL && obj->pstate->exit != NULL)
+        if (obj->pstate != NULL)
         {
-            obj->pstate->exit(obj->pstate);
+            if (obj->pstate->exit != NULL)
+            {
+                obj->pstate->exit(obj->pstate);
+            }
             obj->pstate->parent = NULL;
+            obj->pstate         = NULL;
         }
-        if (nextState != NULL && nextState->init != NULL)
+        if (nextState != NULL)
         {
-            nextState->init(obj->pstate);
-            obj->pstate       = nextState;
             nextState->parent = obj;
+            obj->pstate       = nextState;
+            if (nextState->init != NULL)
+            {
+                nextState->init(obj->pstate);
+            }
         }
     }
 }
