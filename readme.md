@@ -60,8 +60,8 @@ columns 1
 
 ```c
 // 定义状态
-efsm_state_t stateA = {NULL, initA, exitA, actionA};
-efsm_state_t stateB = {NULL, initB, exitB, actionB};
+efsm_state_t stateA = {.name=NULL, .init=initA, .exit=exitA, .action=actionA};
+efsm_state_t stateB = {.name=NULL, .init=initB, .exit=exitB, .action=actionB};
 
 // 定义事件命令
 #define CMD_START  (EFSM_STATE_USER_CMD_BASE + 1)
@@ -101,7 +101,7 @@ void myExitFunction(void *obj) {
     // 退出操作
 }
 
-void myControlFunction(void *obj, uint32_t cmd, void *param) {
+void myControlFunction(void *obj, uint32_t cmd, efsm_param_t *param) {
     // 控制函数，根据cmd执行相应的操作
 }
 ```
@@ -118,11 +118,11 @@ myStateMachine.control = myControlFunction;
 ### 8. 定义状态事件处理函数
 
 ```c
-void actionA(void *obj, uint32_t cmd, void *param) {
+void actionA(void *obj, uint32_t cmd, efsm_param_t *param) {
     // 处理状态A的事件
 }
 
-void actionB(void *obj, uint32_t cmd, void *param) {
+void actionB(void *obj, uint32_t cmd, efsm_param_t *param) {
     // 处理状态B的事件
 }
 ```
@@ -149,6 +149,12 @@ efsm_manage_tick();
 ## 示例
 
 查看 `example.c` 文件以获取一个简单的状态机使用示例。
+
+```bash
+cd example
+make
+make run
+```
 
 ## 许可证
 

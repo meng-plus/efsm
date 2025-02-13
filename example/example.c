@@ -34,14 +34,35 @@ void exitStateStopped(efsm_state_t *obj)
     printf("Exiting State: Stopped\n");
 }
 // 状态事件处理函数
-void actionStateRunning(efsm_state_t *obj, uint32_t cmd, void *param);
-void actionStateStopped(efsm_state_t *obj, uint32_t cmd, void *param);
+void actionStateRunning(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param);
+void actionStateStopped(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param);
 // 状态定义
-efsm_state_t stateIdle    = {NULL, NULL, NULL, NULL};
-efsm_state_t stateRunning = {NULL, initStateRunning, exitStateRunning, actionStateRunning};
-efsm_state_t stateStopped = {NULL, initStateStopped, exitStateStopped, actionStateStopped};
+efsm_state_t stateIdle = {
+    .parent = NULL,
+    .name   = NULL,
+    .id     = 0,
+    .init   = NULL,
+    .exit   = NULL,
+    .action = NULL,
+};
+efsm_state_t stateRunning = {
+    .parent = NULL,
+    .name   = NULL,
+    .id     = 0,
+    .init   = initStateRunning,
+    .exit   = exitStateRunning,
+    .action = actionStateRunning,
+};
+efsm_state_t stateStopped = {
+    .parent = NULL,
+    .name   = NULL,
+    .id     = 0,
+    .init   = initStateStopped,
+    .exit   = exitStateStopped,
+    .action = actionStateStopped,
+};
 // 状态事件处理函数
-void actionStateRunning(efsm_state_t *obj, uint32_t cmd, void *param)
+void actionStateRunning(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param)
 {
     (void)obj; // 防止未使用的参数警告
     (void)cmd;
@@ -49,11 +70,11 @@ void actionStateRunning(efsm_state_t *obj, uint32_t cmd, void *param)
     if (cmd == CMD_STOP)
     {
         printf("Received CMD_STOP, transitioning to Stopped state\n");
-        obj->next = &stateStopped;
+        efsm_transition(obj->parent, &stateStopped);
     }
 }
 
-void actionStateStopped(efsm_state_t *obj, uint32_t cmd, void *param)
+void actionStateStopped(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param)
 {
     (void)obj; // 防止未使用的参数警告
     (void)cmd;
@@ -61,7 +82,7 @@ void actionStateStopped(efsm_state_t *obj, uint32_t cmd, void *param)
     if (cmd == CMD_START)
     {
         printf("Received CMD_START, transitioning to Running state\n");
-        obj->next = &stateRunning;
+        efsm_transition(obj->parent, &stateRunning);
     }
 }
 

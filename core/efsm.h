@@ -17,35 +17,69 @@
 extern "C" {
 #endif
 
+
+typedef enum EFSM_PARAM_TYPE
+{
+    EFSM_PARAM_NULL,
+    EFSM_PARAM_U8,
+    EFSM_PARAM_U16,
+    EFSM_PARAM_U32,
+    EFSM_PARAM_F,
+    EFSM_PARAM_PTR,
+    EFSM_PARAM_U64,
+    EFSM_PARAM_D,
+    EFSM_PARAM_STRUCT,
+    EFSM_PARAM_BASE,
+} efsm_param_type_t;
+
+/**
+ * @brief EFSM传参的数据类型定义
+ *
+ */
+typedef struct _EFSM_PARAM_BASE
+{
+    uint8_t type; /*!< 数据类型 @see  efsm_param_type_t */
+    uint8_t size; /*!< 数据长度 */
+    uint16_t len; /*!< 数据数量 */
+} efsm_param_t;
+
+// 默认初始化宏
+#define EFSM_PARAM_DEFAULT(ntype, nsize, nlen) \
+    {                                          \
+        .type = ntype,                         \
+        .size = nsize,                         \
+        .len  = nlen,                          \
+    }
 typedef struct _EFSM_STATE efsm_state_t;
 typedef struct _EFSM_MANAGE efsm_manage_t;
+
 struct _EFSM_STATE
 {
-    efsm_manage_t *parent;                                        /*!< 状态句柄 非运行状态此处为空*/
-    const char *name;                                             /*!< 状态名称 状态标签*/
-    uint8_t id;                                                   /*!< 状态ID  状态标签 */
-    void (*init)(efsm_state_t *obj);                              /*!< 切换到这个状态的初始化操作 */
-    void (*exit)(efsm_state_t *obj);                              /*!< 退出此状态的动作 */
-    void (*action)(efsm_state_t *obj, uint32_t cmd, void *param); /*!< 相应的状态事件 */
+    efsm_manage_t *parent;                                                /*!< 状态句柄 非运行状态此处为空*/
+    const char *name;                                                     /*!< 状态名称 状态标签*/
+    uint8_t id;                                                           /*!< 状态ID  状态标签 */
+    void (*init)(efsm_state_t *obj);                                      /*!< 切换到这个状态的初始化操作 */
+    void (*exit)(efsm_state_t *obj);                                      /*!< 退出此状态的动作 */
+    void (*action)(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param); /*!< 相应的状态事件 */
 };
 struct _EFSM_MANAGE
 {
-    efsm_manage_t *next;                                            /*!< 单链表结构 */
-    uint32_t init_ok : 1;                                           /*!< 初始化标志 */
-    uint32_t hold_on : 1;                                           /*!< 锁定状态不允许切换 */
-    uint32_t stop    : 1;                                           /*!< 停止事件响应 */
+    efsm_manage_t *next;                                                    /*!< 单链表结构 */
+    uint32_t init_ok : 1;                                                   /*!< 初始化标志 */
+    uint32_t hold_on : 1;                                                   /*!< 锁定状态不允许切换 */
+    uint32_t stop    : 1;                                                   /*!< 停止事件响应 */
     efsm_state_t *pstate;
-    void (*init)(efsm_manage_t *obj);                               /*!< 初始化函数 */
-    void (*tick)(efsm_manage_t *obj);                               /*!< 周期性任务 */
-    void (*exit)(efsm_manage_t *obj);                               /*!< 退出函数 */
-    void (*control)(efsm_manage_t *obj, uint32_t cmd, void *param); /*!< 控制函数 ,param取决于cmd*/
-    void *user_data;                                                /*!< 用户自定义数据 */
+    void (*init)(efsm_manage_t *obj);                                       /*!< 初始化函数 */
+    void (*tick)(efsm_manage_t *obj);                                       /*!< 周期性任务 */
+    void (*exit)(efsm_manage_t *obj);                                       /*!< 退出函数 */
+    void (*control)(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param); /*!< 控制函数 ,param取决于cmd*/
+    void *user_data;                                                        /*!< 用户自定义数据 */
 };
 /** 类型转换 获取包含某成员的结构体指针
- * @example ESFM_DATA_ENTRY(state_ptr,efsm_state_t,obj)
+ * @example EFSM_GET_STRUCT_PTR(state_ptr,efsm_state_t,obj)
  */
-#define ESFM_DATA_ENTRY(ptr, type, member) \
-    ((type *)((char *)(ptr) - offsetof(type, member)))
+#define EFSM_GET_STRUCT_PTR(member_ptr, struct_type, member_name) \
+    ((struct_type *)((char *)(member_ptr) - offsetof(struct_type, member_name)))
 
 void efsm_init();
 /**
@@ -81,7 +115,7 @@ void efsm_manage_tick_user(efsm_manage_t *obj);
  * @param cmd
  * @param param
  */
-void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, void *param);
+void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
 /**
  * @brief 获得当前状态
  *
@@ -98,14 +132,14 @@ void *efsm_manage_get_userdata(efsm_manage_t *obj);
  * @param cmd @see enum EFSM_SYS_CMD
  * @param param
  */
-void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, void *param);
+void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
 /**
  * @brief 广播命令
  *
  * @param cmd
  * @param param
  */
-void efsm_event_broadcast(uint32_t cmd, void *param);
+void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param);
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState);
 

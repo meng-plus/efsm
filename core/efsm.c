@@ -16,7 +16,7 @@ void efsm_state_init(efsm_manage_t *obj);
 // 实现状态退出
 void efsm_state_exit(efsm_manage_t *obj);
 // 系统级别的事件处理
-void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, void *param);
+void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
 /**
  * @brief 事件框架句柄
  * @author GL2715 (chengmeng_2@outlook.com)
@@ -111,7 +111,7 @@ void efsm_manage_tick_user(efsm_manage_t *obj)
     }
 }
 
-void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, void *param)
+void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
     if (obj && obj->control)
     {
@@ -146,7 +146,7 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 }
 
 // 执行状态事件处理
-void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, void *param)
+void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
     if (obj->pstate != NULL && !obj->stop && obj->pstate->action != NULL)
     {
@@ -179,7 +179,7 @@ void *efsm_manage_get_userdata(efsm_manage_t *obj)
     return NULL;
 }
 
-void efsm_event_broadcast(uint32_t cmd, void *param)
+void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param)
 {
     efsm_manage_t *current = efsm_list_head;
 
@@ -194,7 +194,7 @@ void efsm_event_broadcast(uint32_t cmd, void *param)
 }
 // 你可以根据需要定义更多的状态和事件处理函数
 
-void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, void *param)
+void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
     switch (cmd)
     {
