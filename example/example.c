@@ -89,6 +89,7 @@ void actionStateStopped(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param)
 // 主程序
 int main()
 {
+    printf("hello world\n");
     // 初始化状态机框架
     efsm_init();
 

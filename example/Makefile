@@ -16,5 +16,7 @@ $(EXEC): $(OBJS)
 run:
 	./$(EXEC)
 
+test: all
+	./$(EXEC) || (echo "Tests failed"; exit 1)
 clean:
 	rm -f $(OBJS) $(EXEC)
