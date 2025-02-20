@@ -112,7 +112,7 @@ void efsm_manage_tick_user(efsm_manage_t *obj);
 
 /**
  * @brief 指定状态机的控制命令
- *
+ * 发给状态机管理
  * @param obj
  * @param cmd
  * @param param
@@ -129,12 +129,20 @@ void *efsm_manage_get_userdata(efsm_manage_t *obj);
 
 /**
  * @brief  执行状态事件处理
- *
+ * 只有状态(state)处理动作
  * @param obj
  * @param cmd @see enum EFSM_SYS_CMD
  * @param param
  */
 void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
+/**
+ * @brief 管理状态机控制命令
+ *
+ * @param obj
+ * @param cmd
+ * @param param
+ */
+void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
 /**
  * @brief 广播命令
  *

@@ -15,8 +15,7 @@
 void efsm_state_init(efsm_manage_t *obj);
 // 实现状态退出
 void efsm_state_exit(efsm_manage_t *obj);
-// 系统级别的事件处理
-void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
+
 /**
  * @brief 事件框架句柄
  * @author GL2715 (chengmeng_2@outlook.com)
@@ -148,14 +147,15 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 // 执行状态事件处理
 void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
-    if (obj->pstate != NULL && !obj->stop && obj->pstate->action != NULL)
-    {
-        if ((cmd & ~0xFF) == 0)
-        { /*!< 系统级别的事件 */
-            efsm_event_sys(obj, cmd, param);
-        }
-        else
-        { /*!< 用户级别的事件 */
+    if ((cmd & ~0xFF) == 0)
+    { /*!< 系统级别的事件 */
+        efsm_event_sys(obj, cmd, param);
+    }
+    else
+    { /*!< 用户级别的事件 */
+
+        if (obj && obj->pstate && obj->pstate->action)
+        {
             obj->pstate->action(obj->pstate, cmd, param);
         }
     }
@@ -185,10 +185,7 @@ void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param)
 
     while (current != NULL)
     {
-        if (!current->stop)
-        {
-            efsm_event_process(current, cmd, param);
-        }
+        efsm_event_process(current, cmd, param);
         current = current->next;
     }
 }
@@ -196,6 +193,10 @@ void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param)
 
 void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
+    if (obj)
+    {
+        return;
+    }
     switch (cmd)
     {
     case EFSM_CMD_STOP: // 切换到空状态表示停止状态机
