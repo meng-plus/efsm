@@ -64,17 +64,17 @@ void efsm_remove(efsm_manage_t *obj)
     efsm_manage_t *current = efsm_list_head;
     efsm_manage_t *prev    = NULL;
 
-    while (current != NULL)
+    while (current)
     {
         if (current == obj)
         {
-            if (prev == NULL)
+            if (prev)
             {
-                efsm_list_head = current->next;
+                prev->next = current->next;
             }
             else
             {
-                prev->next = current->next;
+                efsm_list_head = current->next;
             }
             efsm_state_exit(current);
             return;
@@ -89,11 +89,11 @@ void efsm_manage_tick()
 {
     efsm_manage_t *current = efsm_list_head;
 
-    while (current != NULL)
+    while (current)
     {
-        if (current->tick != NULL && !current->stop)
+        if (current->ops && !current->stop)
         {
-            current->tick(current);
+            current->ops->tick(current);
         }
         current = current->next;
     }
@@ -101,20 +101,20 @@ void efsm_manage_tick()
 
 void efsm_manage_tick_user(efsm_manage_t *obj)
 {
-    if (obj != NULL)
+    if (obj)
     {
-        if (obj->tick != NULL && !obj->stop)
+        if (obj->ops != NULL && !obj->stop)
         {
-            obj->tick(obj);
+            obj->ops->tick(obj);
         }
     }
 }
 
 void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
-    if (obj && obj->control)
+    if (obj && obj->ops && obj->ops->control)
     {
-        obj->control(obj, cmd, param);
+        obj->ops->control(obj, cmd, param);
     }
 }
 
@@ -123,22 +123,22 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
     if ((obj->pstate != nextState) && !obj->hold_on)
     {
-        if (obj->pstate != NULL)
+        if (obj->pstate)
         {
-            if (obj->pstate->exit != NULL)
+            if (obj->pstate->ops && obj->pstate->ops->exit)
             {
-                obj->pstate->exit(obj->pstate);
+                obj->pstate->ops->exit(obj->pstate);
             }
             obj->pstate->parent = NULL;
             obj->pstate         = NULL;
         }
-        if (nextState != NULL)
+        if (nextState)
         {
             nextState->parent = obj;
             obj->pstate       = nextState;
-            if (nextState->init != NULL)
+            if (nextState->ops && nextState->ops->init)
             {
-                nextState->init(obj->pstate);
+                nextState->ops->init(obj->pstate);
             }
         }
     }
@@ -151,23 +151,23 @@ void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
     { /*!< 系统级别的事件 */
         efsm_event_sys(obj, cmd, param);
     }
-    else
+    else if (obj)
     { /*!< 用户级别的事件 */
 
-        if (obj && obj->pstate && obj->pstate->action)
+        if (obj->pstate && obj->pstate->ops && obj->pstate->ops->action)
         {
-            obj->pstate->action(obj->pstate, cmd, param);
+            obj->pstate->ops->action(obj->pstate, cmd, param);
         }
     }
 }
 
 efsm_state_t *efsm_manage_get_state(efsm_manage_t *obj)
 {
-    if (obj)
+    if (obj == NULL)
     {
-        return obj->pstate;
+        return NULL;
     }
-    return NULL;
+    return obj->pstate;
 }
 
 void *efsm_manage_get_userdata(efsm_manage_t *obj)
@@ -183,7 +183,7 @@ void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param)
 {
     efsm_manage_t *current = efsm_list_head;
 
-    while (current != NULL)
+    while (current)
     {
         efsm_event_process(current, cmd, param);
         current = current->next;
@@ -218,17 +218,19 @@ void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 // 实现状态初始化
 void efsm_state_init(efsm_manage_t *obj)
 {
-    if (obj->init != NULL)
+    if (obj->ops == NULL && obj->ops->init == NULL)
     {
-        obj->init(obj);
+        return;
     }
+    obj->ops->init(obj);
 }
 
 // 实现状态退出
 void efsm_state_exit(efsm_manage_t *obj)
 {
-    if (obj->exit != NULL)
+    if (obj->ops == NULL && obj->ops->exit == NULL)
     {
-        obj->exit(obj);
+        return;
     }
+    obj->ops->exit(obj);
 }

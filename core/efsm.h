@@ -52,30 +52,41 @@ typedef struct _EFSM_PARAM_BASE
     }
 typedef struct _EFSM_STATE efsm_state_t;
 typedef struct _EFSM_MANAGE efsm_manage_t;
-
-struct _EFSM_STATE
+typedef struct efsm_state_ops
 {
-    efsm_manage_t *parent;               /*!< 状态句柄 非运行状态此处为空*/
-    const char *name;                    /*!< 状态名称 状态标签*/
-    uint8_t id;                          /*!< 状态ID  状态标签 */
+    const char *name;                    /*!< 状态名称 */
     void (*init)(efsm_state_t *obj);     /*!< 切换到这个状态的初始化操作 */
     void (*exit)(efsm_state_t *obj);     /*!< 退出此状态的动作 */
     void (*action)(efsm_state_t *obj, uint32_t cmd,
                    efsm_param_t *param); /*!< 相应的状态事件 */
-};
-struct _EFSM_MANAGE
+} efsm_state_ops_t;
+
+struct _EFSM_STATE
 {
-    efsm_manage_t *next;                  /*!< 单链表结构 */
-    uint32_t init_ok : 1;                 /*!< 初始化标志 */
-    uint32_t hold_on : 1;                 /*!< 锁定状态不允许切换 */
-    uint32_t stop    : 1;                 /*!< 停止事件响应 */
-    efsm_state_t *pstate;
+    efsm_manage_t *parent;       /*!< 状态句柄 非运行状态此处为空*/
+    uint32_t timestamp;          /*!< 时间戳 */
+    uint16_t step;
+    const efsm_state_ops_t *ops; /*!< 操作接口 */
+};
+
+typedef struct efsm_manage_ops
+{
+    const char *name;                     /*!< 状态机名称*/
     void (*init)(efsm_manage_t *obj);     /*!< 初始化函数 */
     void (*tick)(efsm_manage_t *obj);     /*!< 周期性任务 */
     void (*exit)(efsm_manage_t *obj);     /*!< 退出函数 */
     void (*control)(efsm_manage_t *obj, uint32_t cmd,
                     efsm_param_t *param); /*!< 控制函数 ,param取决于cmd*/
-    void *user_data;                      /*!< 用户自定义数据 */
+} efsm_manage_ops_t;
+struct _EFSM_MANAGE
+{
+    efsm_manage_t *next;          /*!< 单链表结构 */
+    uint32_t init_ok : 1;         /*!< 初始化标志 */
+    uint32_t hold_on : 1;         /*!< 锁定状态不允许切换 */
+    uint32_t stop    : 1;         /*!< 停止事件响应 */
+    efsm_state_t *pstate;
+    const efsm_manage_ops_t *ops; /*!< 操作接口 */
+    void *user_data;              /*!< 用户自定义数据 */
 };
 /** 类型转换 获取包含某成员的结构体指针
  * @example EFSM_GET_STRUCT_PTR(state_ptr,efsm_state_t,obj)

@@ -37,29 +37,22 @@ void exitStateStopped(efsm_state_t *obj)
 void actionStateRunning(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param);
 void actionStateStopped(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param);
 // 状态定义
-efsm_state_t stateIdle = {
-    .parent = NULL,
-    .name   = NULL,
-    .id     = 0,
-    .init   = NULL,
-    .exit   = NULL,
-    .action = NULL,
-};
-efsm_state_t stateRunning = {
-    .parent = NULL,
-    .name   = NULL,
-    .id     = 0,
+static const struct efsm_state_ops ops = {
     .init   = initStateRunning,
     .exit   = exitStateRunning,
     .action = actionStateRunning,
 };
+static dzf_state_c2h2_lock_line_t state = {
+    .node = {.ops = &ops},
+};
+efsm_state_t stateIdle = {
+    .ops = &ops,
+};
+efsm_state_t stateRunning = {
+    .ops = &ops,
+};
 efsm_state_t stateStopped = {
-    .parent = NULL,
-    .name   = NULL,
-    .id     = 0,
-    .init   = initStateStopped,
-    .exit   = exitStateStopped,
-    .action = actionStateStopped,
+    .ops = &ops,
 };
 // 状态事件处理函数
 void actionStateRunning(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param)
@@ -100,10 +93,7 @@ int main()
     efsm_register(&myStateMachine);
 
     // 设置状态机管理函数
-    myStateMachine.init    = NULL; // 你可以添加一个初始化函数
-    myStateMachine.tick    = NULL; // 你可以添加周期性任务的函数
-    myStateMachine.exit    = NULL; // 你可以添加一个退出函数
-    myStateMachine.control = NULL; // 你可以添加一个控制函数
+
 
     // 初始化状态机状态为Running
     efsm_transition(&myStateMachine, &stateRunning);
