@@ -4,10 +4,11 @@ bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uin
 {
     if (state_ptr->step < step_num)
     {
+        uint8_t idx                = state_ptr->step;
         const_efsm_step_t step_ptr = step_vec[state_ptr->step];
 
         bool res = 0;
-        if (step_ptr->action) res = step_ptr->action(state_ptr);
+        if (step_ptr->check) res = step_ptr->check(state_ptr);
 
         switch (step_ptr->type)
         {
@@ -47,6 +48,14 @@ bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uin
         default:
             return false;
             break;
+        }
+        if (idx != state_ptr->step)
+        {
+            if (state_ptr->step && step_vec[state_ptr->step]->set)
+            {
+                step_vec[state_ptr->step]->set(state_ptr);
+            }
+            state_ptr->timestamp = tick;
         }
         return true;
     }

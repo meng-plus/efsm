@@ -39,13 +39,17 @@ typedef struct efsm_step
     efsm_step_type_t type; /**< 步骤类型标识 */
     const char *name;      /*!< 步骤名称 */
     /**
-     * @brief 执行步骤的动作
+     * @brief 执行步骤的动作 执行一次
      *
      * @param[in] self 指向当前状态的指针
+     */
+    bool (*set)(efsm_state_t *self);
+    /**
+     * @brief 检查动作
      * @return true 动作执行完毕
      * @return false 动作未执行完毕
      */
-    bool (*action)(efsm_state_t *self);
+    bool (*check)(efsm_state_t *self);
 } *efsm_step_t;
 
 typedef const struct efsm_step *const_efsm_step_t;
@@ -84,23 +88,24 @@ typedef struct efsm_step_warning
     uint16_t step_id;      /*!< 报错ID */
 } *efsm_step_warning_t;
 
-#define EFSM_STEP_DEFAULT(n_name, n_type, n_action) \
-    {                                               \
-        .name   = n_name,                           \
-        .type   = n_type,                           \
-        .action = n_action,                         \
+#define EFSM_STEP_DEFAULT(n_name, n_type, n_set, n_check) \
+    {                                                     \
+        .name  = n_name,                                  \
+        .type  = n_type,                                  \
+        .set   = n_set,                                   \
+        .check = n_check,                                 \
     }
-#define EFSM_STEP_TIMED_DEFAULT(n_name, n_action, min_time, max_time)           \
-    {                                                                           \
-        .base           = EFSM_STEP_DEFAULT(n_name, EFSM_STEP_TIMED, n_action), \
-        .limit_min_time = min_time,                                             \
-        .limit_max_time = max_time,                                             \
+#define EFSM_STEP_TIMED_DEFAULT(n_name, n_set, n_check, min_time, max_time)           \
+    {                                                                                 \
+        .base           = EFSM_STEP_DEFAULT(n_name, EFSM_STEP_TIMED, n_set, n_check), \
+        .limit_min_time = min_time,                                                   \
+        .limit_max_time = max_time,                                                   \
     }
-#define EFSM_STEP_CONDITIONAL_DEFAULT(n_name, n_action, n_step_true, n_step_false) \
-    {                                                                              \
-        .base       = EFSM_STEP_DEFAULT(n_name, EFSM_STEP_CONDITIONAL, n_action),  \
-        .step_true  = n_step_true,                                                 \
-        .step_false = n_step_false,                                                \
+#define EFSM_STEP_CONDITIONAL_DEFAULT(n_name, n_set, n_check, n_step_true, n_step_false) \
+    {                                                                                    \
+        .base       = EFSM_STEP_DEFAULT(n_name, EFSM_STEP_CONDITIONAL, n_set, n_check),  \
+        .step_true  = n_step_true,                                                       \
+        .step_false = n_step_false,                                                      \
     }
 
 /**
