@@ -11,6 +11,7 @@
 #define __EFSM_H_
 
 #include <stdint.h>
+#include <stddef.h> //for offsetof
 #include "efsm_def.h"
 
 #ifdef __cplusplus
