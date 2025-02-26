@@ -81,13 +81,13 @@ typedef struct efsm_manage_ops
 } efsm_manage_ops_t;
 struct _EFSM_MANAGE
 {
-    efsm_manage_t *next;          /*!< 单链表结构 */
     uint32_t init_ok : 1;         /*!< 初始化标志 */
     uint32_t hold_on : 1;         /*!< 锁定状态不允许切换 */
     uint32_t stop    : 1;         /*!< 停止事件响应 */
     efsm_state_t *pstate;
     const efsm_manage_ops_t *ops; /*!< 操作接口 */
     void *user_data;              /*!< 用户自定义数据 */
+    efsm_manage_t *next;          /*!< 单链表结构 */
 };
 /** 类型转换 获取包含某成员的结构体指针
  * @example EFSM_GET_STRUCT_PTR(state_ptr,efsm_state_t,obj)
@@ -164,7 +164,15 @@ void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
 void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param);
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState);
+/**
+ * @brief 状态切换钩子用于检测状态切换
+ *
+ * @param obj
+ * @param nextState
+ */
+typedef void (*efsm_transition_hook)(const efsm_manage_t *obj, const efsm_state_t *nextState);
 
+void efsm_transition_set_hook(efsm_transition_hook hook);
 #ifdef __cplusplus
 }
 #endif

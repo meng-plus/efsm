@@ -25,7 +25,7 @@ bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uin
             }
             else
             {
-                if (step_time->limit_max_time && (step_time->limit_max_time > tick - state_ptr->timestamp))
+                if (step_time->limit_max_time && (step_time->limit_max_time >= tick - state_ptr->timestamp))
                 {
                     state_ptr->step++;
                 }

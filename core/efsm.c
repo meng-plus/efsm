@@ -23,8 +23,8 @@ void efsm_state_exit(efsm_manage_t *obj);
  * @date 2024-01-30
  *
  */
-static efsm_manage_t *efsm_list_head = NULL;
-
+static efsm_manage_t *efsm_list_head        = NULL;
+static efsm_transition_hook transition_hook = NULL;
 // 初始化状态机框架
 void efsm_init()
 {
@@ -121,6 +121,8 @@ void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
+    if (transition_hook) transition_hook(obj, nextState);
+
     if ((obj->pstate != nextState) && !obj->hold_on)
     {
         if (obj->pstate)
@@ -142,6 +144,11 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
             }
         }
     }
+}
+
+void efsm_transition_set_hook(efsm_transition_hook hook)
+{
+    transition_hook = hook;
 }
 
 // 执行状态事件处理
