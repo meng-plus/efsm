@@ -37,14 +37,12 @@ void exitStateStopped(efsm_state_t *obj)
 void actionStateRunning(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param);
 void actionStateStopped(efsm_state_t *obj, uint32_t cmd, efsm_param_t *param);
 // 状态定义
-static const struct efsm_state_ops ops = {
+const efsm_state_ops_t ops = {
     .init   = initStateRunning,
     .exit   = exitStateRunning,
     .action = actionStateRunning,
 };
-static dzf_state_c2h2_lock_line_t state = {
-    .node = {.ops = &ops},
-};
+
 efsm_state_t stateIdle = {
     .ops = &ops,
 };

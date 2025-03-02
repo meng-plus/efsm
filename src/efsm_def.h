@@ -1,7 +1,7 @@
 /**
  * @file efsm_def.h
  * @brief 事件驱动型状态机内部支持的命令定义
- * @author GL2715 (chengmeng_2@outlook.com)
+ * @author mengplus (chengmeng_2@outlook.com)
  * @version  0.1
  * @date 2024-01-31
  * @copyright Copyright (c) 2024

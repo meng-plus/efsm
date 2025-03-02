@@ -2,7 +2,8 @@
 
 CC = gcc
 CFLAGS = -Wall -Wextra -O2 -g -fPIC
-INCLUDES = -I../src -I../
+INCLUDES = -I../src
+LIBS = -lcheck -lm -lpthread -lrt -lsubunit
 
 # 目标文件路径
 BUILD_DIR = ./build
@@ -24,7 +25,7 @@ all: $(TARGET)
 
 # 链接 demo_app 可执行文件
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)  $(INCLUDES)
+	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LIBS) $(INCLUDES)
 
 # 编译目标文件
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
@@ -36,7 +37,7 @@ $(OBJDIR)/%.o: ../%.c
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET) $(OBJDIR)/*.o
 
-run: $(TARGET)
+test: $(TARGET)
 	$(TARGET)
 
 .PHONY: clean all test

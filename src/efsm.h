@@ -1,7 +1,7 @@
 /**
  * @file efsm.h
  * @brief 基于事件型的状态机
- * @author GL2715 (chengmeng_2@outlook.com)
+ * @author mengplus (chengmeng_2@outlook.com)
  * @version  0.1
  * @date 2024-01-30
  * @copyright Copyright (c) 2024

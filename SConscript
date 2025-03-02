@@ -2,10 +2,10 @@ from building import *
 import os
 
 cwd = GetCurrentDir()
-src = Glob('core/*.c')
-CPPPATH = [cwd+"/core"]
+src = Glob('src/*.c')
+CPPPATH = [cwd+"/src"]
 
-group = DefineGroup('efsm', src, depend = [''], CPPPATH = CPPPATH)
+group = DefineGroup('third_party', src, depend = [''], CPPPATH = CPPPATH)
 
 list = os.listdir(cwd)
 for item in list:

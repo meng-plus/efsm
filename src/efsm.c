@@ -1,7 +1,7 @@
 /**
  * @file efsm.c
  * @brief
- * @author GL2715 (chengmeng_2@outlook.com)
+ * @author mengplus (chengmeng_2@outlook.com)
  * @version  0.1
  * @date 2024-01-30
  * @copyright Copyright (c) 2024  Zhengzhou GL. TECH Co.,Ltd
@@ -11,14 +11,9 @@
 
 #include <string.h>
 
-// 实现状态初始化
-void efsm_state_init(efsm_manage_t *obj);
-// 实现状态退出
-void efsm_state_exit(efsm_manage_t *obj);
-
 /**
  * @brief 事件框架句柄
- * @author GL2715 (chengmeng_2@outlook.com)
+ * @author mengplus (chengmeng_2@outlook.com)
  * @version  0.1
  * @date 2024-01-30
  *
@@ -54,7 +49,11 @@ void efsm_register(efsm_manage_t *obj)
     {
         obj->next      = efsm_list_head;
         efsm_list_head = obj;
-        efsm_state_init(obj);
+
+        if (obj->ops && obj->ops->init)
+        {
+            obj->ops->init(obj);
+        }
     }
 }
 
@@ -76,7 +75,10 @@ void efsm_remove(efsm_manage_t *obj)
             {
                 efsm_list_head = current->next;
             }
-            efsm_state_exit(current);
+            if (obj->ops && obj->ops->exit)
+            {
+                obj->ops->exit(obj);
+            }
             return;
         }
         prev    = current;
@@ -220,24 +222,4 @@ void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
     default:
         break;
     }
-}
-
-// 实现状态初始化
-void efsm_state_init(efsm_manage_t *obj)
-{
-    if (obj->ops == NULL && obj->ops->init == NULL)
-    {
-        return;
-    }
-    obj->ops->init(obj);
-}
-
-// 实现状态退出
-void efsm_state_exit(efsm_manage_t *obj)
-{
-    if (obj->ops == NULL && obj->ops->exit == NULL)
-    {
-        return;
-    }
-    obj->ops->exit(obj);
 }
