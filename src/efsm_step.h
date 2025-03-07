@@ -119,5 +119,5 @@ typedef struct efsm_step_warning
  * @return false 异常执行/无步骤可执行
  */
 bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint16_t step_num, uint32_t tick);
-
+bool efsm_step_set(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint8_t step, uint16_t step_num, uint32_t tick);
 #endif
