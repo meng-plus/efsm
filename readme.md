@@ -143,6 +143,13 @@ columns 1
 
 
 ```
+
+### 资源占用
+```bash
+  MODEL_EFSM                       0x2'7330     0x2be  <Block>
+    .text              ro code     0x2'7330     0x1bc  efsm.o [1]
+    .text              ro code     0x2'74ec     0x102  efsm_step.o [1]
+```
 ## 快速开始
 
 ### 1. 安装与配置
