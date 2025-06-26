@@ -123,7 +123,7 @@ void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
-    if (transition_hook) transition_hook(obj, nextState);
+    if (obj->hook) obj->hook(obj, nextState);
 
     if ((obj->pstate != nextState) && !obj->hold_on)
     {
@@ -139,6 +139,7 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
         if (nextState)
         {
             nextState->parent = obj;
+            obj->timestamp    = 0; /*!< 清除时间戳 */
             obj->pstate       = nextState;
             if (nextState->ops && nextState->ops->init)
             {
@@ -148,9 +149,9 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
     }
 }
 
-void efsm_transition_set_hook(efsm_transition_hook hook)
+void efsm_transition_set_hook(efsm_manage_t *obj, efsm_transition_hook hook)
 {
-    transition_hook = hook;
+    obj->hook = hook;
 }
 
 // 执行状态事件处理

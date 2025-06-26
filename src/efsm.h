@@ -70,6 +70,14 @@ struct _EFSM_STATE
     const efsm_state_ops_t *ops; /*!< 操作接口 */
 };
 
+/**
+ * @brief 状态切换钩子用于检测状态切换
+ *
+ * @param obj
+ * @param nextState
+ */
+typedef void (*efsm_transition_hook)(const efsm_manage_t *obj, const efsm_state_t *nextState);
+
 typedef struct efsm_manage_ops
 {
     const char *name;                     /*!< 状态机名称*/
@@ -85,7 +93,9 @@ struct _EFSM_MANAGE
     uint32_t hold_on : 1;         /*!< 锁定状态不允许切换 */
     uint32_t stop    : 1;         /*!< 停止事件响应 */
     efsm_state_t *pstate;
+    uint32_t timestamp;           /*!< 时间戳 上次切换状态标签 */
     const efsm_manage_ops_t *ops; /*!< 操作接口 */
+    efsm_transition_hook hook;
     void *user_data;              /*!< 用户自定义数据 */
     efsm_manage_t *next;          /*!< 单链表结构 */
 };
@@ -164,15 +174,8 @@ void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param);
 void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param);
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState);
-/**
- * @brief 状态切换钩子用于检测状态切换
- *
- * @param obj
- * @param nextState
- */
-typedef void (*efsm_transition_hook)(const efsm_manage_t *obj, const efsm_state_t *nextState);
 
-void efsm_transition_set_hook(efsm_transition_hook hook);
+void efsm_transition_set_hook(efsm_manage_t *obj, efsm_transition_hook hook);
 #ifdef __cplusplus
 }
 #endif
