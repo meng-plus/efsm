@@ -61,7 +61,7 @@ bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uin
 bool efsm_step_set(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint8_t step, uint16_t step_num, uint32_t tick)
 {
     state_ptr->step = step;
-    if ((state_ptr->step < step_num) && step_vec[state_ptr->step]->set)
+    if ((state_ptr->step < step_num) && step_vec[state_ptr->step] && step_vec[state_ptr->step]->set)
     {
         step_vec[state_ptr->step]->set(state_ptr);
     }
