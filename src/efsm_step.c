@@ -2,69 +2,82 @@
 
 bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint16_t step_num, uint32_t tick)
 {
-    if (state_ptr->step < step_num)
+    if (!state_ptr || !step_vec || step_num == 0 || state_ptr->step >= step_num)
     {
-        uint8_t idx                = state_ptr->step;
-        const_efsm_step_t step_ptr = step_vec[state_ptr->step];
-
-        bool res = 0;
-        if (step_ptr->check) res = step_ptr->check(state_ptr);
-
-        switch (step_ptr->type)
-        {
-        case EFSM_STEP_BASE:
-            if (res) state_ptr->step++;
-            break;
-        case EFSM_STEP_TIMED: {
-            efsm_step_timed_t step_time = EFSM_GET_STRUCT_PTR(step_ptr, struct efsm_step_timed, base);
-            if (res)
-            {
-                if (!step_time->limit_min_time || step_time->limit_min_time <= tick - state_ptr->timestamp)
-                {
-                    state_ptr->step++;
-                }
-            }
-            else
-            {
-                if (step_time->limit_max_time && (step_time->limit_max_time >= tick - state_ptr->timestamp))
-                {
-                    state_ptr->step++;
-                }
-            }
-        }
-        break;
-        case EFSM_STEP_CONDITIONAL: {
-            efsm_step_conditional_t step_conditional = EFSM_GET_STRUCT_PTR(step_ptr, struct efsm_step_conditional, base);
-            if (res)
-            {
-                state_ptr->step += step_conditional->step_true;
-            }
-            else
-            {
-                state_ptr->step += step_conditional->step_false;
-            }
-        }
-        break;
-        default:
-            return false;
-            break;
-        }
-        if (idx != state_ptr->step)
-        {
-            efsm_step_set(state_ptr, step_vec, state_ptr->step, step_num, tick);
-        }
-        return true;
+        return false;
     }
-    return false;
+    const uint8_t idx          = state_ptr->step;
+    const_efsm_step_t step_ptr = step_vec[idx];
+    if (!step_ptr)
+    {
+        return false;
+    }
+
+    bool res = 0;
+    if (step_ptr->check) res = step_ptr->check(state_ptr);
+
+    switch (step_ptr->type)
+    {
+    case EFSM_STEP_BASE:
+        if (res) state_ptr->step++;
+        break;
+    case EFSM_STEP_TIMED: {
+        efsm_step_timed_t step_time = EFSM_GET_STRUCT_PTR(step_ptr, struct efsm_step_timed, base);
+        uint32_t elapsed_time       = (tick >= state_ptr->timestamp) ? (tick - state_ptr->timestamp) : (0xFFFFFFFF - state_ptr->timestamp + tick + 1);
+
+        if (res)
+        {
+            // 条件满足，检查最小时间限制
+            if (!step_time->limit_min_time || elapsed_time >= step_time->limit_min_time)
+            {
+                state_ptr->step++;
+            }
+        }
+        else
+        {
+            // 条件不满足，检查最大时间限制
+            if (step_time->limit_max_time && elapsed_time >= step_time->limit_max_time)
+            {
+                state_ptr->step++;
+            }
+        }
+    }
+    break;
+    case EFSM_STEP_CONDITIONAL: {
+        efsm_step_conditional_t step_conditional = EFSM_GET_STRUCT_PTR(step_ptr, struct efsm_step_conditional, base);
+        if (res)
+        {
+            state_ptr->step += step_conditional->step_true;
+        }
+        else
+        {
+            state_ptr->step += step_conditional->step_false;
+        }
+    }
+    break;
+    default:
+        return false;
+        break;
+    }
+    if (state_ptr->step != idx)
+    {
+        efsm_step_set(state_ptr, step_vec, state_ptr->step, step_num, tick);
+    }
+    return true;
 }
 
 bool efsm_step_set(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint8_t step, uint16_t step_num, uint32_t tick)
 {
+    if (!state_ptr || !step_vec || step >= step_num)
+    {
+        return false;
+    }
+
     state_ptr->step = step;
-    if ((state_ptr->step < step_num) && step_vec[state_ptr->step] && step_vec[state_ptr->step]->set)
+    if (step_vec[state_ptr->step] && step_vec[state_ptr->step]->set)
     {
         step_vec[state_ptr->step]->set(state_ptr);
     }
     state_ptr->timestamp = tick;
-    return false;
+    return true; // 返回操作成功
 }

@@ -11,6 +11,7 @@
 #define __EFSM_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h> //for offsetof
 #include "efsm_def.h"
 
@@ -109,7 +110,7 @@ void efsm_init();
 /**
  * @brief 注册状态机，使其可用
  */
-void efsm_register(efsm_manage_t *obj);
+bool efsm_register(efsm_manage_t *obj);
 /**
  * @brief 移除状态机
  * @param obj 移除的状态机句柄

@@ -29,32 +29,39 @@ void efsm_init()
 // 初始化状态机管理结构体
 void efsm_manage_init(efsm_manage_t *obj)
 {
+    if (!obj) {
+        return;
+    }
     memset(obj, 0, sizeof(efsm_manage_t));
     obj->init_ok = 1;
 }
 
 // 注册状态机
-void efsm_register(efsm_manage_t *obj)
+bool efsm_register(efsm_manage_t *obj)
 {
+    if (!obj || !obj->init_ok) {
+        return false;
+    }
+
     efsm_manage_t *current = efsm_list_head;
     while (current != NULL)
     { /*!< 避免重复注册 */
         if (current == obj)
         {
-            return;
+            return true;  // 已经注册
         }
         current = current->next;
     }
-    if (obj && obj->init_ok)
-    {
-        obj->next      = efsm_list_head;
-        efsm_list_head = obj;
 
-        if (obj->ops && obj->ops->init)
-        {
-            obj->ops->init(obj);
-        }
+    obj->next      = efsm_list_head;
+    efsm_list_head = obj;
+
+    if (obj->ops && obj->ops->init)
+    {
+        obj->ops->init(obj);
     }
+
+    return true;
 }
 
 // 从状态机链表中移除状态机
@@ -123,7 +130,13 @@ void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
-    if (obj->hook) obj->hook(obj, nextState);
+    if (!obj) {
+        return;
+    }
+
+    if (obj->hook) {
+        obj->hook(obj, nextState);
+    }
 
     if ((obj->pstate != nextState) && !obj->hold_on)
     {
@@ -157,13 +170,16 @@ void efsm_transition_set_hook(efsm_manage_t *obj, efsm_transition_hook hook)
 // 执行状态事件处理
 void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
+    if (!obj) {
+        return;
+    }
+
     if ((cmd & ~0xFF) == 0)
     { /*!< 系统级别的事件 */
         efsm_event_sys(obj, cmd, param);
     }
-    else if (obj)
-    { /*!< 用户级别的事件 */
-
+    else
+    {
         if (obj->pstate && obj->pstate->ops && obj->pstate->ops->action)
         {
             obj->pstate->ops->action(obj->pstate, cmd, param);
@@ -203,10 +219,10 @@ void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param)
 
 void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
-    if (obj)
-    {
+    if (!obj) {
         return;
     }
+
     switch (cmd)
     {
     case EFSM_CMD_STOP: // 切换到空状态表示停止状态机
@@ -216,7 +232,9 @@ void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
         obj->stop = 0;
         break;
     case EFSM_CMD_HOLD:
-        obj->hold_on = *(uint32_t *)param != 0;
+        if (param) {
+            obj->hold_on = *(uint32_t *)param != 0;
+        }
         break;
     case EFSM_CMD_END:
         break;
