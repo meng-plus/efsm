@@ -18,18 +18,18 @@
  * @date 2024-01-30
  *
  */
-static efsm_manage_t *efsm_list_head        = NULL;
-static efsm_transition_hook transition_hook = NULL;
+static efsm_manage_t *efsm_list_head = NULL;
 // 初始化状态机框架
 void efsm_init()
 {
-    // efsm_list_head = NULL;
+    efsm_list_head = NULL;
 }
 
 // 初始化状态机管理结构体
 void efsm_manage_init(efsm_manage_t *obj)
 {
-    if (!obj) {
+    if (!obj)
+    {
         return;
     }
     memset(obj, 0, sizeof(efsm_manage_t));
@@ -39,7 +39,8 @@ void efsm_manage_init(efsm_manage_t *obj)
 // 注册状态机
 bool efsm_register(efsm_manage_t *obj)
 {
-    if (!obj || !obj->init_ok) {
+    if (!obj || !obj->init_ok)
+    {
         return false;
     }
 
@@ -48,7 +49,7 @@ bool efsm_register(efsm_manage_t *obj)
     { /*!< 避免重复注册 */
         if (current == obj)
         {
-            return true;  // 已经注册
+            return true; // 已经注册
         }
         current = current->next;
     }
@@ -130,11 +131,13 @@ void efsm_manage_control(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 // 执行状态切换
 void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
 {
-    if (!obj) {
+    if (!obj)
+    {
         return;
     }
 
-    if (obj->hook) {
+    if (obj->hook)
+    {
         obj->hook(obj, nextState);
     }
 
@@ -170,7 +173,8 @@ void efsm_transition_set_hook(efsm_manage_t *obj, efsm_transition_hook hook)
 // 执行状态事件处理
 void efsm_event_process(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
-    if (!obj) {
+    if (!obj)
+    {
         return;
     }
 
@@ -219,7 +223,8 @@ void efsm_event_broadcast(uint32_t cmd, efsm_param_t *param)
 
 void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
 {
-    if (!obj) {
+    if (!obj)
+    {
         return;
     }
 
@@ -232,7 +237,8 @@ void efsm_event_sys(efsm_manage_t *obj, uint32_t cmd, efsm_param_t *param)
         obj->stop = 0;
         break;
     case EFSM_CMD_HOLD:
-        if (param) {
+        if (param)
+        {
             obj->hold_on = *(uint32_t *)param != 0;
         }
         break;

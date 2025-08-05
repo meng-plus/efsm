@@ -6,7 +6,7 @@ bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uin
     {
         return false;
     }
-    const uint8_t idx          = state_ptr->step;
+    const uint8_t     idx      = state_ptr->step;
     const_efsm_step_t step_ptr = step_vec[idx];
     if (!step_ptr)
     {
@@ -22,8 +22,8 @@ bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uin
         if (res) state_ptr->step++;
         break;
     case EFSM_STEP_TIMED: {
-        efsm_step_timed_t step_time = EFSM_GET_STRUCT_PTR(step_ptr, struct efsm_step_timed, base);
-        uint32_t elapsed_time       = (uint32_t)(tick - state_ptr->timestamp);
+        efsm_step_timed_t step_time    = EFSM_GET_STRUCT_PTR(step_ptr, struct efsm_step_timed, base);
+        uint32_t          elapsed_time = (uint32_t)(tick - state_ptr->timestamp);
 
         if (res)
         {

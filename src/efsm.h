@@ -106,7 +106,7 @@ struct _EFSM_MANAGE
 #define EFSM_GET_STRUCT_PTR(member_ptr, struct_type, member_name) \
     ((struct_type *)((char *)(member_ptr) - offsetof(struct_type, member_name)))
 
-void efsm_init();
+void efsm_init(void);
 /**
  * @brief 注册状态机，使其可用
  */
@@ -124,7 +124,7 @@ void efsm_manage_init(efsm_manage_t *obj);
  * @brief 周期性事件函数，可以理解为状态机的线程，根据需要开发
  * 只有执行 efsm_register  才会从这里调用
  */
-void efsm_manage_tick();
+void efsm_manage_tick(void);
 /**
  * @brief 用户自定义的线程函数
  * 在此处调用的efsm 不再需要注册
