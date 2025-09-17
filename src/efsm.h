@@ -67,7 +67,6 @@ struct _EFSM_STATE
 {
     efsm_manage_t *parent;       /*!< 状态句柄 非运行状态此处为空*/
     uint32_t timestamp;          /*!< 时间戳 */
-    uint16_t step;
     const efsm_state_ops_t *ops; /*!< 操作接口 */
 };
 

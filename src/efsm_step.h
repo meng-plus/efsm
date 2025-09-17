@@ -29,6 +29,7 @@ typedef enum
     EFSM_STEP_WARNING,     /**< 带条件判断的步骤 */
     EFSM_STEP_CUSTOM       /**< 自定义步骤 */
 } efsm_step_type_t;
+typedef struct efsm_state_step efsm_state_step_t;
 /**
  * @brief EFSM 步骤基类结构体
  *
@@ -43,14 +44,14 @@ typedef struct efsm_step
      *
      * @param[in] self 指向当前状态的指针
      */
-    bool (*set)(efsm_state_t *self);
+    bool (*set)(efsm_state_step_t *self);
     /**
      * @brief 检查动作
      * @return true 动作执行完毕
      * @return false 动作未执行完毕
      */
-    bool (*check)(efsm_state_t *self);
-} *efsm_step_t;
+    bool (*check)(efsm_state_step_t *self);
+} efsm_step_t;
 
 typedef const struct efsm_step *const_efsm_step_t;
 
@@ -108,6 +109,14 @@ typedef struct efsm_step_warning
         .step_false = n_step_false,                                                      \
     }
 
+struct efsm_state_step
+{
+    efsm_state_t state;
+    uint16_t step;
+    uint16_t step_num;
+    const_efsm_step_t *step_vec;
+};
+
 /**
  * @brief 状态机步骤执行
  *
@@ -118,6 +127,7 @@ typedef struct efsm_step_warning
  * @return true  成功执行
  * @return false 异常执行/无步骤可执行
  */
-bool efsm_step_process(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint16_t step_num, uint32_t tick);
-bool efsm_step_set(efsm_state_t *state_ptr, const_efsm_step_t *step_vec, uint8_t step, uint16_t step_num, uint32_t tick);
+bool efsm_step_process(efsm_state_step_t *state_step_ptr, uint32_t tick);
+bool efsm_step_set(efsm_state_step_t *state_step_ptr, uint8_t step, uint32_t tick);
+
 #endif
