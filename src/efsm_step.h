@@ -129,5 +129,5 @@ struct efsm_state_step
  */
 bool efsm_step_process(efsm_state_step_t *state_step_ptr, uint32_t tick);
 bool efsm_step_set(efsm_state_step_t *state_step_ptr, uint8_t step, uint32_t tick);
-
+void efsm_step_init(efsm_state_step_t *state_step_ptr, const_efsm_step_t *step_vec, uint16_t step_num, uint32_t tick);
 #endif
