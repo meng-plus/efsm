@@ -15,9 +15,9 @@
  * [0x00-0xFF]为框架使用字段,不得用于用户命令
  *
  */
-#define EFSM_STATE_SYS_CMD_BASE 0x000
+#define EFSM_STATE_SYS_CMD_BASE  0x000
 #define EFSM_STATE_USER_CMD_BASE 0x100
-#define EFSM_UNUSED(param) (void)param
+#define EFSM_UNUSED(param)       (void)param
 // 根据需要定义更多的命令
 enum EFSM_SYS_CMD
 {
@@ -25,7 +25,6 @@ enum EFSM_SYS_CMD
     EFSM_CMD_START,
     EFSM_CMD_HOLD, /*!< param  uint32_t*  {0,1}  */
     EFSM_CMD_END,
-
 };
 
 #endif

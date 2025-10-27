@@ -65,7 +65,7 @@ bool efsm_step_process(efsm_state_step_t *state_step_ptr, uint32_t tick)
     }
     if (idx != state_step_ptr->step)
     {
-      return efsm_step_set(state_step_ptr, idx, tick);
+        return efsm_step_set(state_step_ptr, idx, tick);
     }
     return true;
 }
