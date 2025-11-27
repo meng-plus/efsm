@@ -93,6 +93,7 @@ struct _EFSM_MANAGE
     uint32_t hold_on : 1;         /*!< 锁定状态不允许切换 */
     uint32_t stop    : 1;         /*!< 停止事件响应 */
     efsm_state_t *pstate;
+    efsm_state_t *next_state;     /*!< 下一个状态 */
     uint32_t timestamp;           /*!< 时间戳 上次切换状态标签 */
     const efsm_manage_ops_t *ops; /*!< 操作接口 */
     efsm_transition_hook hook;

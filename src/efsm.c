@@ -93,7 +93,39 @@ void efsm_remove(efsm_manage_t *obj)
         current = current->next;
     }
 }
+static void efsm_state_change(efsm_manage_t *obj)
+{
+    efsm_state_t *nextState = obj->next_state;
+    obj->next_state         = NULL;
+    if (nextState && nextState != obj->pstate)
+    {
+        if (obj->hook)
+        {
+            obj->hook(obj, nextState);
+        }
 
+        if (obj->pstate)
+        {
+            if (obj->pstate->ops && obj->pstate->ops->exit)
+            {
+                obj->pstate->ops->exit(obj->pstate);
+            }
+            obj->pstate->parent = NULL;
+            obj->pstate         = NULL;
+        }
+
+        if (nextState)
+        {
+            nextState->parent = obj;
+            obj->timestamp    = 0; /*!< 清除时间戳 */
+            obj->pstate       = nextState;
+            if (nextState->ops && nextState->ops->init)
+            {
+                nextState->ops->init(obj->pstate);
+            }
+        }
+    }
+}
 // 执行所有注册的状态机的周期性任务
 void efsm_manage_tick()
 {
@@ -101,6 +133,7 @@ void efsm_manage_tick()
 
     while (current)
     {
+        efsm_state_change(current);
         if (current->ops && !current->stop)
         {
             current->ops->tick(current);
@@ -113,6 +146,7 @@ void efsm_manage_tick_user(efsm_manage_t *obj)
 {
     if (obj)
     {
+        efsm_state_change(obj);
         if (obj->ops != NULL && !obj->stop)
         {
             obj->ops->tick(obj);
@@ -136,32 +170,9 @@ void efsm_transition(efsm_manage_t *obj, efsm_state_t *nextState)
         return;
     }
 
-    if (obj->hook)
-    {
-        obj->hook(obj, nextState);
-    }
-
     if ((obj->pstate != nextState) && !obj->hold_on)
     {
-        if (obj->pstate)
-        {
-            if (obj->pstate->ops && obj->pstate->ops->exit)
-            {
-                obj->pstate->ops->exit(obj->pstate);
-            }
-            obj->pstate->parent = NULL;
-            obj->pstate         = NULL;
-        }
-        if (nextState)
-        {
-            nextState->parent = obj;
-            obj->timestamp    = 0; /*!< 清除时间戳 */
-            obj->pstate       = nextState;
-            if (nextState->ops && nextState->ops->init)
-            {
-                nextState->ops->init(obj->pstate);
-            }
-        }
+        obj->next_state = nextState;
     }
 }
 
