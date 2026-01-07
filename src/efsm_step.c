@@ -10,7 +10,7 @@ bool efsm_step_process(efsm_state_step_t *state_step_ptr, uint32_t tick)
     {
         return false;
     }
-    uint8_t idx                = state_step_ptr->step;
+    int8_t idx                = state_step_ptr->step;
     const_efsm_step_t step_ptr = step_vec[idx];
     if (!step_ptr)
     {
@@ -56,6 +56,10 @@ bool efsm_step_process(efsm_state_step_t *state_step_ptr, uint32_t tick)
         else
         {
             idx += step_conditional->step_false;
+        }
+        if (idx < 0)
+        {
+            idx = 0;
         }
     }
     break;
