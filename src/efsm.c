@@ -61,6 +61,10 @@ bool efsm_register(efsm_manage_t *obj)
     {
         obj->ops->init(obj);
     }
+    if (obj->pstate && obj->pstate->ops && obj->pstate->ops->init)
+    {
+        obj->pstate->ops->init(obj->pstate);
+    }
 
     return true;
 }
@@ -82,6 +86,15 @@ void efsm_remove(efsm_manage_t *obj)
             else
             {
                 efsm_list_head = current->next;
+            }
+            if (obj->pstate)
+            {
+                if (obj->pstate->ops && obj->pstate->ops->exit)
+                {
+                    obj->pstate->ops->exit(obj->pstate);
+                }
+                obj->pstate->parent = NULL;
+                obj->pstate         = NULL;
             }
             if (obj->ops && obj->ops->exit)
             {
